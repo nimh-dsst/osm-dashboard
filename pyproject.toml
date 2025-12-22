@@ -51,8 +51,8 @@ plot = [
 ]
 [project.urls]
 homepage = "https://website"
-source = "https://github.com/nimh-dsst/osm"
-issues = "https://github.com/nimh-dsst/osm/issues"
+source = "https://github.com/nimh-dsst/osm-dashboard"
+issues = "https://github.com/nimh-dsst/osm-dashboard/issues"
 
 [build-system]
 requires = ["setuptools>=42", "wheel", "setuptools_scm[toml]>=3.4"]

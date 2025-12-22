@@ -8,7 +8,7 @@ When calling modules, the relevant input variables can be found in their `variab
 
 ## Repository Secrets and Variables
 
-You must set the following [repository secrets](https://github.com/nimh-dsst/osm/settings/secrets/actions) before running the GitHub workflows: 
+You must set the following [repository secrets](https://github.com/nimh-dsst/osm-dashboard/settings/secrets/actions) before running the GitHub workflows: 
 
 * `AWS_ACCOUNT_ID`: The [AWS account ID](https://docs.aws.amazon.com/accounts/latest/reference/manage-acct-identifiers.html#FindAccountId) used for the deployments
 * `AWS_REGION`: The AWS region where the deployments reside
@@ -22,7 +22,7 @@ You must set the following [repository secrets](https://github.com/nimh-dsst/osm
 * `SSH_STAGE_HOST`: The static IP address of the staging ec2 instance
 * `LETSENCRYPT_ADMIN_EMAIL`: The email address associated with the Let's Encrypt certificate
 * `DEPLOYMENT_USERNAME`: The username used to ssh into the ec2 instances. Defaults to `ubuntu`.
-You must also set the following [repository variables](https://github.com/nimh-dsst/osm/settings/variables/actions) before running the GitHub workflows:
+You must also set the following [repository variables](https://github.com/nimh-dsst/osm-dashboard/settings/variables/actions) before running the GitHub workflows:
 
 * `PRODUCTION_DEPLOYMENT_URI`: The URL of the production deployment. Probably `'opensciencemetrics.org'` (including single quotes `'`)
 * `STAGING_DEPLOYMENT_URI`: The URL of the staging deployment. Probably `'dev.opensciencemetrics.org'` (including single quotes `'`)
@@ -145,7 +145,7 @@ Note that running the OpenTofu deployment to production will _not_ redeploy the 
 
 ### Manual Deployment from GitHub Actions
 
-You can manually deploy the [Docker images](https://github.com/nimh-dsst/osm/actions/workflows/deploy-docker.yml) and [OpenTofu deployment](https://github.com/nimh-dsst/osm/actions/workflows/deploy-opentofu.yml) by navigating to the appropriate action and clicking the "Run workflow" button to reveal the associated menu. Using that menu, you can dispatch either workflow from an arbitrary branch in the repository to either staging or production.
+You can manually deploy the [Docker images](https://github.com/nimh-dsst/osm-dashboard/actions/workflows/deploy-docker.yml) and [OpenTofu deployment](https://github.com/nimh-dsst/osm-dashboard/actions/workflows/deploy-opentofu.yml) by navigating to the appropriate action and clicking the "Run workflow" button to reveal the associated menu. Using that menu, you can dispatch either workflow from an arbitrary branch in the repository to either staging or production.
 
 Note that running the OpenTofu deployment will automatically run the Docker deployment as a child workflow.
 
