@@ -11,7 +11,7 @@ services:
         labels:
             - traefik.enable=true
             - traefik.docker.network=osm_traefik-public
-            - traefik.http.routers.osm_web_api.rule=Host(`${DEPLOYMENT_URI}`) && PathPrefix(`/api`)
+            - traefik.http.routers.osm_web_api.rule=(Host(`${DEPLOYMENT_URI}`) || Host(`www.${DEPLOYMENT_URI}`)) && PathPrefix(`/api`)
             - "traefik.http.middlewares.strip-api-prefix.stripprefix.prefixes=/api"
             - "traefik.http.routers.osm_web_api.middlewares=strip-api-prefix@docker"
             - "traefik.http.routers.osm_web_api.entrypoints=web,websecure"
@@ -44,7 +44,7 @@ services:
         labels:
             - traefik.enable=true
             - traefik.docker.network=osm_traefik-public
-            - traefik.http.routers.dashboard.rule=Host(`${DEPLOYMENT_URI}`)
+            - traefik.http.routers.dashboard.rule=Host(`${DEPLOYMENT_URI}`) || Host(`www.${DEPLOYMENT_URI}`)
             - traefik.http.routers.dashboard.entrypoints=web,websecure
             - traefik.http.services.dashboard.loadbalancer.server.port=8501
             - traefik.http.routers.dashboard.tls=true
