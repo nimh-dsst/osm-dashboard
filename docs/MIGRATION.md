@@ -12,39 +12,18 @@ This document tracks the migration of the OSM dashboard from the `osm` repositor
 - [x] Updated `web/deploy/terraform/README.md` documentation links
 - [x] Updated `web/deploy/terraform/modules/iam/policies/assume-role.json.tftpl` IAM OIDC trust policy to allow `osm-dashboard`
 
+### 2026-02-12: Secrets, IAM, and www Subdomain
+
+- [x] Copied all repository secrets and variables from `nimh-dsst/osm` to `nimh-dsst/osm-dashboard`
+- [x] Updated AWS IAM trust policy to allow `osm-dashboard`
+- [x] Added CNAME DNS record for `www.opensciencemetrics.org` → `opensciencemetrics.org` (via Hover)
+- [x] Updated Traefik routing rules in `web/deploy/docker-compose.yaml` to match both `opensciencemetrics.org` and `www.opensciencemetrics.org` (commit `67ad360` on `develop`)
+- [x] Deployed the updated routing rules to production EC2 manually via SSH (containers recreated, TLS cert auto-provisioned)
+- [x] Verified both https://opensciencemetrics.org and https://www.opensciencemetrics.org return 200
+
 ## Next Steps
 
-### 1. Copy Repository Secrets and Variables
-
-Copy all secrets and variables from `nimh-dsst/osm` to `nimh-dsst/osm-dashboard`. See [Copying Secrets](#copying-secrets-from-osm-to-osm-dashboard) below.
-
-### 2. Update AWS IAM Trust Policy
-
-The IAM role in AWS currently only trusts `nimh-dsst/osm`. You need to update it to also trust `nimh-dsst/osm-dashboard`:
-
-**Option A: Trust both repos during transition**
-
-Temporarily modify `assume-role.json.tftpl` in the *original* `osm` repo to trust both:
-
-```json
-"token.actions.githubusercontent.com:sub": [
-    "repo:nimh-dsst/osm:*",
-    "repo:nimh-dsst/osm-dashboard:*"
-]
-```
-
-Then redeploy shared resources from `osm`:
-
-```bash
-cd web/deploy/terraform/shared
-tofu apply
-```
-
-**Option B: Direct cutover**
-
-If you're ready to fully switch, just deploy from `osm-dashboard` after updating secrets.
-
-### 3. Test Deployment to Staging
+### 1. Test GitHub Actions Deployment to Staging
 
 Manually trigger the Docker deployment workflow from `osm-dashboard`:
 
