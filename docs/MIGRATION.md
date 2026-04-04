@@ -21,9 +21,18 @@ This document tracks the migration of the OSM dashboard from the `osm` repositor
 - [x] Deployed the updated routing rules to production EC2 manually via SSH (containers recreated, TLS cert auto-provisioned)
 - [x] Verified both https://opensciencemetrics.org and https://www.opensciencemetrics.org return 200
 
+### 2026-04-04: Staging Deployment Test
+
+- [x] Updated live AWS IAM trust policy for `github-actions-role-shared` to allow both `osm` and `osm-dashboard` (via AWS CLI; terraform template was already updated but `tofu apply` had not been run)
+- [x] Added deployment info footer to Streamlit dashboard (commit `a032e51` on `develop`)
+- [x] Triggered `deploy-docker.yml` manually from `develop` branch targeting staging
+- [x] All workflow jobs passed: build-and-push (api+dashboard), docker-up ([run 23986105404](https://github.com/nimh-dsst/osm-dashboard/actions/runs/23986105404))
+- [x] Verified https://dev.opensciencemetrics.org returns HTTP 200 (dashboard loads)
+- [ ] **Known issue**: `MONGODB_URI` secret is missing from `osm-dashboard` repo — API container is unhealthy, `/api/health` falls through to dashboard. Need to set this secret before production deployment.
+
 ## Next Steps
 
-### 1. Test GitHub Actions Deployment to Staging
+### 1. ~~Test GitHub Actions Deployment to Staging~~ (Done)
 
 Manually trigger the Docker deployment workflow from `osm-dashboard`:
 
