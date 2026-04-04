@@ -83,3 +83,7 @@ jobs:
           file: web/${{ inputs.deployment }}/Dockerfile
           build-args: |
             BASE_IMAGE=localhost:5000/osm/osm_base
+            BUILD_TIMESTAMP=${{ github.event.head_commit.timestamp || '' }}
+            GIT_COMMIT=${{ steps.compute-image-tag.outputs.short_sha }}
+            GIT_REPO=${{ github.repository }}
+            GIT_BRANCH=${{ github.ref_name }}

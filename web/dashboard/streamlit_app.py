@@ -452,3 +452,12 @@ else:
 st.plotly_chart(fig, use_container_width=True)  # pyright: ignore[reportUnknownMemberType]
 
 st.text("Toggle lines on or off by clicking on them")
+
+# Deployment info footer
+_commit = os.environ.get("GIT_COMMIT", "")
+_repo = os.environ.get("GIT_REPO", "")
+_branch = os.environ.get("GIT_BRANCH", "")
+_build_ts = os.environ.get("BUILD_TIMESTAMP", "")
+_parts = [p for p in [_repo, _branch, _commit, _build_ts] if p]
+if _parts:
+    st.caption(f"Deploy: {' | '.join(_parts)}")
