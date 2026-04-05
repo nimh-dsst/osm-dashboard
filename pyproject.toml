@@ -1,72 +1,39 @@
 [project]
-name = "osm"
-description = "Open Science Metrics (OSM) client for tracking scientific transparency and reproducibility metrics"
+name = "osm-dashboard"
+version = "2.0.0"
+description = "Interactive dashboard for OpenSciMetrics — open data and code sharing rates across funders, journals, and institutions"
 readme = "README.md"
 requires-python = ">=3.11"
 keywords = [
   "open science",
-  "altmetrics",
+  "data sharing",
   "scientific transparency",
-  "reproducibility"
+  "dashboard",
 ]
-dynamic = ["version"]
 dependencies = [
-  "dill",
-  "pandas",
-  "pyarrow",
-  "pydantic",
-  "pydantic[email]",
-  "python_on_whales",
-  "odmantic",
-  "requests",
-  "polars",
-  "pycountry",
+  "dash>=2.14",
+  "plotly>=5.18",
+  "pandas>=2.0",
+  "gunicorn>=21.0",
 ]
 
 [project.optional-dependencies]
 dev = [
-  "pdbpp",
-  "ipython",
   "ruff",
-  "pytest",
-  "tox",
   "pre-commit>=4.2.0",
-]
-server = [
-  "fastapi[standard]",
-  "uvicorn",
-  "gunicorn",
-]
-llm = [
-  "llama-index",
-  "llama-index-llms-openai",
-  "llama-index-program-openai",
-  "llama-index-llms-openrouter"
-]
-plot = [
-  "colorcet>=3.1.0",
-  "panel>=1.7.1",
-  "plotly>=6.2.0",
-  "streamlit>=1.47.1",
 ]
 
 [project.urls]
-homepage = "https://website"
+homepage = "https://opensciencemetrics.org"
 source = "https://github.com/nimh-dsst/osm-dashboard"
 issues = "https://github.com/nimh-dsst/osm-dashboard/issues"
 
 [build-system]
-requires = ["setuptools>=42", "wheel", "setuptools_scm[toml]>=3.4"]
+requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
-
-[tool.setuptools_scm]
-write_to = "osm/_version.py"
 
 [tool.setuptools.packages.find]
 where = ["."]
-
-[project.scripts]
-osm = "osm.cli:main"
 
 [tool.ruff]
 line-length = 88

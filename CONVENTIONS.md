@@ -1,2 +1,0 @@
-- Prefer httpx over requests for making http requests.
-- Use types everywhere possible.

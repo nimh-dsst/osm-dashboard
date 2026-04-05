@@ -1,120 +1,67 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## Project Overview
 
-OpenSciMetrics (OSM) applies NLP and LLM-based metrics to analyze transparency, data sharing, rigor, and open science indicators in biomedical publications. The project processes PDFs and XML files from sources like PubMed Central.
+OpenSciMetrics (OSM) Dashboard — an interactive web dashboard showing open data and code sharing rates across biomedical funders, journals, and institutions. Built with Plotly Dash, this is the visualization companion to the [OSM preprint](https://github.com/nimh-dsst/osm-preprint-2026).
 
 ## Development Commands
 
 ```bash
 # Install for development
-pip install -e .
+pip install -e ".[dev]"
 
-# Install with optional dependencies
-pip install -e ".[dev]"      # Development tools (pytest, ruff, tox)
-pip install -e ".[server]"   # FastAPI server
-pip install -e ".[llm]"      # LLM extraction tools
-pip install -e ".[plot]"     # Visualization (streamlit, plotly, panel)
+# Run the dashboard locally (debug mode)
+python -m dashboard
 
-# Run tests
-pytest tests/
-tox                          # Run full test suite with tox
+# Run with gunicorn (production)
+gunicorn dashboard.app:server -b 0.0.0.0:8050 -w 2
 
-# Run a single test
-pytest tests/test_schema_helpers.py -v
-pytest tests/test_schema_helpers.py::test_function_name -v
-
-# Linting and formatting (via pre-commit)
-pip install pre-commit
-pre-commit install
-pre-commit run --all-files   # Run all hooks manually
-
-# Run the CLI
-osm -f path/to/pdf-or-xml -u uuid
-
-# Development with docker-compose
-docker compose -f compose.yaml -f compose.development.override.yaml up --build
-# In another terminal:
-export OSM_API="http://localhost:80"
-osm -f path/to/pdf-or-xml -u uuid --user-managed-compose
+# Docker build and run
+docker build -t osm-dashboard .
+docker run -p 8050:8050 osm-dashboard
 ```
 
 ## Architecture
 
-### Core Pipeline (`osm/pipeline/`)
+### Dashboard (`dashboard/`)
 
-The processing pipeline follows a modular design with three component types:
+- `app.py` — Dash application: layout, tabs (Funders/Journals), callbacks, data table
+- `charts.py` — Plotly horizontal bar chart generation (dual-bar with corrections, error whiskers, log-scale color)
+- `data.py` — CSV data loading and filtering
+- `data/` — Pre-computed CSV files from the preprint analysis pipeline
+- `assets/` — Custom CSS for Dash
 
-1. **Parsers** (`parsers.py`) - Convert input documents to XML
-   - `ScienceBeamParser`: Converts PDFs to TEI XML via elifesciences/sciencebeam-parser
-   - `PMCParser`/`NoopParser`: Pass-through for XML files from PubMed Central
+### Data Flow
 
-2. **Extractors** (`extractors.py`) - Extract metrics from XML
-   - `RTransparentExtractor`: Calls rtransparent R service on port 8071
+1. `osm-pipeline` processes ~7M PubMed Central articles with oddpub v7.2.3
+2. `osm-preprint-2026` queries DuckDB and generates summary CSVs (funder/journal rankings)
+3. CSVs are committed to `dashboard/data/` in this repo
+4. Dashboard loads CSVs at startup and serves interactive charts
 
-3. **Savers** (`savers.py`) - Persist results
-   - `FileSaver`: Writes files to disk
-   - `JSONSaver`: Writes JSON metrics
-   - `OSMSaver`: Uploads to OSM API/MongoDB
+### Deployment (`web/deploy/`)
 
-The `Pipeline` class (`core.py`) orchestrates these: parsers → extractors → savers.
-
-### Schemas (`osm/schemas/`)
-
-Pydantic/Odmantic models for MongoDB persistence:
-- `Invocation`: Main document model containing metrics, components, work reference
-- `RtransparentMetrics`: ~190 boolean/string fields for transparency indicators (COI, funding, registration, open data/code)
-- `Work`: Publication identifiers (pmid, doi, openalex_id)
-- `Component`: Tracks parser/extractor versions
-
-### External Components (`external_components/`)
-
-- `rtransparent/`: R service exposing rtransparent package via HTTP (port 8071)
-- `llm_extraction/`: LLM-based extraction tools
-
-### Web Components (`web/`)
-
-- `api/`: FastAPI backend (port 80) - receives processed metrics
-- `dashboard/`: Streamlit dashboard (port 8501) - visualizes metrics data
-- `deploy/terraform/`: OpenTofu IaC for AWS deployment
-
-## Docker Services
-
-Production compose (`compose.yaml`):
-- `sciencebeam`: PDF parser on port 8070
-- `rtransparent`: R metrics extraction on port 8071
-
-Development compose adds (`compose.development.override.yaml`):
-- `db`: MongoDB on port 27017
-- `dashboard`: Streamlit on port 8501
-- `web_api`: FastAPI on port 80
+- Docker image built via GitHub Actions, pushed to AWS ECR
+- Deployed on EC2 with Traefik reverse proxy (HTTPS via Let's Encrypt)
+- Domains: opensciencemetrics.org (prod), dev.opensciencemetrics.org (staging)
 
 ## Code Conventions
 
+- Use type hints
+- Pre-commit hooks enforce ruff formatting
 - Prefer `httpx` over `requests` for HTTP requests
-- Use type hints everywhere possible
-- Pre-commit hooks enforce: ruff (lint/format), isort, trailing whitespace, OpenTofu validation
 
-## Infrastructure Deployment
+## Updating Dashboard Data
 
-Uses OpenTofu (>=1.8.0) for AWS infrastructure. See `web/deploy/terraform/README.md` for:
-- State resource bootstrap (one-time manual step)
-- Shared/staging/production deployments
-- Required GitHub secrets (AWS credentials, SSH keys, MongoDB URI)
+When the preprint analysis is re-run with new data:
 
-CI/CD workflows in `.github/workflows/`:
-- `tests.yml`: Run pytest
-- `lint.yml`: Run linting
-- `build-docker.yml`: Build Docker images
-- `deploy-docker.yml`: Deploy to staging/production
-- `deploy-opentofu.yml`: Infrastructure deployment
+```bash
+# From osm-preprint-2026, regenerate CSVs
+make funder-table-2024 journal-table-2024
 
-## Key Data Flow
+# Copy to dashboard
+cp results/funders_summary.csv results/funders_summary_2024_2025.csv \
+   results/journals_summary_2024_2025.csv \
+   ../osm-dashboard/dashboard/data/
 
-1. User provides PDF/XML + unique ID via CLI
-2. PDF → ScienceBeam → TEI XML (skipped for PMC XML)
-3. XML → RTransparent → 190+ transparency metrics
-4. Results → local JSON + OSM API (MongoDB)
-5. Dashboard queries MongoDB for visualization
+# Commit and deploy
+```

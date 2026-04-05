@@ -1,0 +1,14 @@
+{
+  "baseline_rates": {
+    "overall": 8.7,
+    "funded": 16.6
+  },
+  "date_range": {
+    "from": "2024-01-01",
+    "to": "2025-06-30"
+  },
+  "data_generated": "2026-03-15",
+  "source": "osm-preprint-2026",
+  "total_articles": 326000,
+  "description": "Open data/code rates from oddpub v7.2.3 analysis of PubMed Central open access articles"
+}
