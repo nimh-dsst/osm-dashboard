@@ -27,33 +27,65 @@ server = app.server  # For gunicorn
 # Layout helpers
 # ---------------------------------------------------------------------------
 
-def _build_controls(prefix: str, min_default: int, max_val: int) -> html.Div:
-    """Build the controls row for a tab (min articles, search, sort, correction)."""
+def _build_controls(
+    prefix: str,
+    min_default: int,
+    max_val: int,
+    *,
+    works_threshold: bool = False,
+    works_default: int = 0,
+    works_max: int = 0,
+) -> html.Div:
+    """Build the controls row for a tab."""
+    sliders = [
+        html.Div([
+            html.Label("Min articles", style={"fontWeight": "bold", "fontSize": "13px"}),
+            dcc.Slider(
+                id=f"{prefix}-min-articles",
+                min=0,
+                max=max_val,
+                value=min_default,
+                marks={
+                    0: "0",
+                    100: "100",
+                    500: "500",
+                    1000: "1K",
+                    2000: "2K",
+                    5000: "5K",
+                    10000: "10K",
+                    max_val: f"{max_val // 1000}K" if max_val >= 1000 else str(max_val),
+                },
+                step=100,
+                tooltip={"placement": "bottom", "always_visible": False},
+            ),
+        ], style={"minWidth": "280px", "flex": "1"}),
+    ]
+    if works_threshold:
+        sliders.append(html.Div([
+            html.Label("Min OpenAlex works", style={"fontWeight": "bold", "fontSize": "13px"}),
+            dcc.Slider(
+                id=f"{prefix}-min-works",
+                min=0,
+                max=works_max,
+                value=works_default,
+                marks={
+                    0: "0",
+                    10000: "10K",
+                    50000: "50K",
+                    100000: "100K",
+                    500000: "500K",
+                    works_max: f"{works_max // 1000}K" if works_max >= 1000 else str(works_max),
+                },
+                step=10000,
+                tooltip={"placement": "bottom", "always_visible": False},
+            ),
+        ], style={"minWidth": "280px", "flex": "1"}))
+
     return html.Div(
         style={"display": "flex", "gap": "24px", "alignItems": "flex-end",
                "flexWrap": "wrap", "marginBottom": "16px"},
         children=[
-            html.Div([
-                html.Label("Min articles", style={"fontWeight": "bold", "fontSize": "13px"}),
-                dcc.Slider(
-                    id=f"{prefix}-min-articles",
-                    min=0,
-                    max=max_val,
-                    value=min_default,
-                    marks={
-                        0: "0",
-                        100: "100",
-                        500: "500",
-                        1000: "1K",
-                        2000: "2K",
-                        5000: "5K",
-                        10000: "10K",
-                        max_val: f"{max_val // 1000}K" if max_val >= 1000 else str(max_val),
-                    },
-                    step=100,
-                    tooltip={"placement": "bottom", "always_visible": False},
-                ),
-            ], style={"minWidth": "300px", "flex": "1"}),
+            *sliders,
             html.Div([
                 html.Label("Search", style={"fontWeight": "bold", "fontSize": "13px"}),
                 dcc.Input(
@@ -139,6 +171,7 @@ JOURNAL_TABLE_COLS = [
 # ---------------------------------------------------------------------------
 
 _funder_max = int(FUNDERS["total_articles"].max())
+_funder_works_max = int(FUNDERS["aggregated_works_count"].max())
 _journal_max = int(JOURNALS["total_articles"].max())
 
 
@@ -165,7 +198,7 @@ app.layout = html.Div(
             [
                 "Open data and code sharing rates across biomedical funders, journals, "
                 "and institutions. Interactive companion to the ",
-                html.A("OSM preprint", href="https://github.com/nimh-dsst/osm-preprint-2026",
+                html.A("Open Science Metrics", href="https://github.com/nimh-dsst/open-science-metrics",
                        target="_blank"),
                 f". Data: {METADATA['date_range']['from']} to {METADATA['date_range']['to']}.",
             ],
@@ -203,7 +236,10 @@ app.layout = html.Div(
 def render_tab(tab: str):
     if tab == "funders":
         return html.Div([
-            _build_controls("funder", min_default=2500, max_val=_funder_max),
+            _build_controls(
+                "funder", min_default=2586, max_val=_funder_max,
+                works_threshold=True, works_default=100000, works_max=_funder_works_max,
+            ),
             dcc.Graph(id="funder-chart"),
             html.H3("Funder Data", style={"marginTop": "24px"}),
             dash_table.DataTable(
@@ -241,14 +277,17 @@ def render_tab(tab: str):
     Output("funder-chart", "figure"),
     Output("funder-table", "data"),
     Input("funder-min-articles", "value"),
+    Input("funder-min-works", "value"),
     Input("funder-search", "value"),
     Input("funder-sort", "value"),
     Input("funder-show-correction", "value"),
 )
-def update_funder(min_articles, search, sort_by, show_correction):
+def update_funder(min_articles, min_works, search, sort_by, show_correction):
     df = FUNDERS
     if min_articles:
         df = filter_by_min_articles(df, min_articles)
+    if min_works:
+        df = df[df["aggregated_works_count"] >= min_works]
     if search:
         df = filter_by_search(df, search, "label")
 
