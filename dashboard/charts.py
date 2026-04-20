@@ -97,6 +97,13 @@ def make_bar_chart(
 
     fig = go.Figure()
 
+    # URL column for customdata (empty string if no URL) — placing URLs on the bar
+    # traces themselves so Dash click callbacks can open them, without needing a
+    # separate Scatter trace (which causes a top-gap rendering bug in Plotly when
+    # added to a categorical y-axis).
+    url_array = urls if urls is not None else np.array([""] * len(df))
+    click_hint = "<br><i>Click to view on OpenAlex ↗</i>" if urls is not None else ""
+
     if has_correction:
         corrected = df[corrected_col].values
         ci_lo = df[ci_lo_col].values
@@ -122,10 +129,11 @@ def make_bar_chart(
             hovertemplate=(
                 "<b>%{y}</b><br>"
                 "Corrected: %{x:.1f}%<br>"
-                "CI: [%{customdata[0]:.1f}%, %{customdata[1]:.1f}%]"
+                "CI: [%{customdata[1]:.1f}%, %{customdata[2]:.1f}%]"
+                + click_hint +
                 "<extra></extra>"
             ),
-            customdata=np.column_stack([ci_lo, ci_hi]),
+            customdata=np.column_stack([url_array, ci_lo, ci_hi]),
         ))
 
         # Foreground bar: observed (full opacity)
@@ -139,12 +147,14 @@ def make_bar_chart(
             hovertemplate=(
                 "<b>%{y}</b><br>"
                 "Observed: %{x:.1f}%<br>"
-                "Articles: %{customdata[0]:,}<br>"
-                "Open data: %{customdata[1]:,}<br>"
-                "Open code: %{customdata[2]:,}"
+                "Articles: %{customdata[1]:,}<br>"
+                "Open data: %{customdata[2]:,}<br>"
+                "Open code: %{customdata[3]:,}"
+                + click_hint +
                 "<extra></extra>"
             ),
             customdata=np.column_stack([
+                url_array,
                 totals,
                 df["open_data_articles"].values,
                 df["open_code_articles"].values,
@@ -164,34 +174,13 @@ def make_bar_chart(
             hovertemplate=(
                 "<b>%{y}</b><br>"
                 "Observed: %{x:.1f}%<br>"
-                "Articles: %{customdata[0]:,}"
+                "Articles: %{customdata[1]:,}"
+                + click_hint +
                 "<extra></extra>"
             ),
-            customdata=np.column_stack([totals]),
+            customdata=np.column_stack([url_array, totals]),
         ))
         max_val = observed.max()
-
-    # Add link icons just inside the left edge for items with a URL
-    if urls is not None:
-        link_urls_filtered = []
-        link_y = []
-        for label, url in zip(labels, urls):
-            if url and isinstance(url, str) and url.startswith("http"):
-                link_y.append(label)
-                link_urls_filtered.append(url)
-        if link_y:
-            # Position at a small fixed x so they're visible inside the plot
-            link_x = max_val * 0.005
-            fig.add_trace(go.Scatter(
-                x=[link_x] * len(link_y),
-                y=link_y,
-                mode="text",
-                text=["🔗"] * len(link_y),
-                textfont=dict(size=10),
-                customdata=link_urls_filtered,
-                hovertemplate="View on OpenAlex ↗<extra></extra>",
-                showlegend=False,
-            ))
 
     # Baseline reference line
     if baseline_pct is not None:

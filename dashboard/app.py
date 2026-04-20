@@ -345,9 +345,12 @@ app.clientside_callback(
         if (clickData && clickData.points && clickData.points.length > 0) {
             var point = clickData.points[0];
             var cd = point.customdata;
-            // Link markers store URL as a scalar string in customdata
-            if (typeof cd === 'string' && cd.startsWith('http')) {
-                window.open(cd, '_blank');
+            // URL is the first element of the bar's customdata array
+            if (Array.isArray(cd) && cd.length > 0) {
+                var url = cd[0];
+                if (typeof url === 'string' && url.startsWith('http')) {
+                    window.open(url, '_blank');
+                }
             }
         }
         return '';
