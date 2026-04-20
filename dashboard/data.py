@@ -22,9 +22,11 @@ def _load_funders(filename: str = "funders_summary_2024_2025.csv") -> pd.DataFra
     df = pd.read_csv(_DATA_DIR / filename)
     # Build display label: "Funder Name (Country)"
     df["label"] = df.apply(
-        lambda r: f"{r['funder_name']} ({r['country']})"
-        if pd.notna(r["country"]) and r["country"]
-        else r["funder_name"],
+        lambda r: (
+            f"{r['funder_name']} ({r['country']})"
+            if pd.notna(r["country"]) and r["country"]
+            else r["funder_name"]
+        ),
         axis=1,
     )
     # Build OpenAlex URL for funders with an ID
@@ -33,9 +35,11 @@ def _load_funders(filename: str = "funders_summary_2024_2025.csv") -> pd.DataFra
     )
     # Markdown link for data table: [Name](url)
     df["funder_link"] = df.apply(
-        lambda r: f"[{r['funder_name']}]({r['openalex_url']})"
-        if r["openalex_url"]
-        else r["funder_name"],
+        lambda r: (
+            f"[{r['funder_name']}]({r['openalex_url']})"
+            if r["openalex_url"]
+            else r["funder_name"]
+        ),
         axis=1,
     )
     return df
