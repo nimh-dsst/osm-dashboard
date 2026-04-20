@@ -26,7 +26,7 @@ def _ylOrRd_color(t: float) -> str:
         r = 1.0 - 0.5 * s
         g = 0.55 - 0.55 * s
         b = 0.0
-    return f"rgb({int(r*255)},{int(g*255)},{int(b*255)})"
+    return f"rgb({int(r * 255)},{int(g * 255)},{int(b * 255)})"
 
 
 def _log_normalize(values: np.ndarray) -> np.ndarray:
@@ -110,76 +110,80 @@ def make_bar_chart(
         ci_hi = df[ci_hi_col].values
 
         # Background bar: corrected estimate (lighter)
-        fig.add_trace(go.Bar(
-            y=labels,
-            x=corrected,
-            orientation="h",
-            marker_color=colors_light,
-            marker_line=dict(color="grey", width=0.3),
-            error_x=dict(
-                type="data",
-                symmetric=False,
-                array=ci_hi - corrected,
-                arrayminus=corrected - ci_lo,
-                color="black",
-                thickness=0.8,
-                width=2,
-            ),
-            name="Estimated (corrected)",
-            hovertemplate=(
-                "<b>%{y}</b><br>"
-                "Corrected: %{x:.1f}%<br>"
-                "CI: [%{customdata[1]:.1f}%, %{customdata[2]:.1f}%]"
-                + click_hint +
-                "<extra></extra>"
-            ),
-            customdata=np.column_stack([url_array, ci_lo, ci_hi]),
-        ))
+        fig.add_trace(
+            go.Bar(
+                y=labels,
+                x=corrected,
+                orientation="h",
+                marker_color=colors_light,
+                marker_line=dict(color="grey", width=0.3),
+                error_x=dict(
+                    type="data",
+                    symmetric=False,
+                    array=ci_hi - corrected,
+                    arrayminus=corrected - ci_lo,
+                    color="black",
+                    thickness=0.8,
+                    width=2,
+                ),
+                name="Estimated (corrected)",
+                hovertemplate=(
+                    "<b>%{y}</b><br>"
+                    "Corrected: %{x:.1f}%<br>"
+                    "CI: [%{customdata[1]:.1f}%, %{customdata[2]:.1f}%]"
+                    + click_hint
+                    + "<extra></extra>"
+                ),
+                customdata=np.column_stack([url_array, ci_lo, ci_hi]),
+            )
+        )
 
         # Foreground bar: observed (full opacity)
-        fig.add_trace(go.Bar(
-            y=labels,
-            x=observed,
-            orientation="h",
-            marker_color=colors,
-            marker_line=dict(color="grey", width=0.3),
-            name="Observed",
-            hovertemplate=(
-                "<b>%{y}</b><br>"
-                "Observed: %{x:.1f}%<br>"
-                "Articles: %{customdata[1]:,}<br>"
-                "Open data: %{customdata[2]:,}<br>"
-                "Open code: %{customdata[3]:,}"
-                + click_hint +
-                "<extra></extra>"
-            ),
-            customdata=np.column_stack([
-                url_array,
-                totals,
-                df["open_data_articles"].values,
-                df["open_code_articles"].values,
-            ]),
-        ))
+        fig.add_trace(
+            go.Bar(
+                y=labels,
+                x=observed,
+                orientation="h",
+                marker_color=colors,
+                marker_line=dict(color="grey", width=0.3),
+                name="Observed",
+                hovertemplate=(
+                    "<b>%{y}</b><br>"
+                    "Observed: %{x:.1f}%<br>"
+                    "Articles: %{customdata[1]:,}<br>"
+                    "Open data: %{customdata[2]:,}<br>"
+                    "Open code: %{customdata[3]:,}" + click_hint + "<extra></extra>"
+                ),
+                customdata=np.column_stack(
+                    [
+                        url_array,
+                        totals,
+                        df["open_data_articles"].values,
+                        df["open_code_articles"].values,
+                    ]
+                ),
+            )
+        )
 
         max_val = max(ci_hi.max(), observed.max())
     else:
         # Single bar: observed only
-        fig.add_trace(go.Bar(
-            y=labels,
-            x=observed,
-            orientation="h",
-            marker_color=colors,
-            marker_line=dict(color="grey", width=0.3),
-            name="Observed",
-            hovertemplate=(
-                "<b>%{y}</b><br>"
-                "Observed: %{x:.1f}%<br>"
-                "Articles: %{customdata[1]:,}"
-                + click_hint +
-                "<extra></extra>"
-            ),
-            customdata=np.column_stack([url_array, totals]),
-        ))
+        fig.add_trace(
+            go.Bar(
+                y=labels,
+                x=observed,
+                orientation="h",
+                marker_color=colors,
+                marker_line=dict(color="grey", width=0.3),
+                name="Observed",
+                hovertemplate=(
+                    "<b>%{y}</b><br>"
+                    "Observed: %{x:.1f}%<br>"
+                    "Articles: %{customdata[1]:,}" + click_hint + "<extra></extra>"
+                ),
+                customdata=np.column_stack([url_array, totals]),
+            )
+        )
         max_val = observed.max()
 
     # Baseline reference line
@@ -215,31 +219,33 @@ def make_bar_chart(
     )
 
     # Add a dummy scatter trace for the colorbar
-    fig.add_trace(go.Scatter(
-        x=[None],
-        y=[None],
-        mode="markers",
-        marker=dict(
-            size=0,
-            colorscale="YlOrRd",
-            cmin=math.log10(max(totals.min(), 1)),
-            cmax=math.log10(totals.max()),
-            colorbar=dict(
-                title=colorbar_label,
-                tickvals=[
-                    math.log10(v) for v in [100, 1000, 10000, 100000]
-                    if v <= totals.max()
-                ],
-                ticktext=[
-                    str(v) for v in [100, 1000, 10000, 100000]
-                    if v <= totals.max()
-                ],
-                len=0.5,
-                y=0.5,
+    fig.add_trace(
+        go.Scatter(
+            x=[None],
+            y=[None],
+            mode="markers",
+            marker=dict(
+                size=0,
+                colorscale="YlOrRd",
+                cmin=math.log10(max(totals.min(), 1)),
+                cmax=math.log10(totals.max()),
+                colorbar=dict(
+                    title=colorbar_label,
+                    tickvals=[
+                        math.log10(v)
+                        for v in [100, 1000, 10000, 100000]
+                        if v <= totals.max()
+                    ],
+                    ticktext=[
+                        str(v) for v in [100, 1000, 10000, 100000] if v <= totals.max()
+                    ],
+                    len=0.5,
+                    y=0.5,
+                ),
             ),
-        ),
-        showlegend=False,
-        hoverinfo="skip",
-    ))
+            showlegend=False,
+            hoverinfo="skip",
+        )
+    )
 
     return fig

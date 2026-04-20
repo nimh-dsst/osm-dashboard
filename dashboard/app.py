@@ -27,6 +27,7 @@ server = app.server  # For gunicorn
 # Layout helpers
 # ---------------------------------------------------------------------------
 
+
 def _build_controls(
     prefix: str,
     min_default: int,
@@ -38,87 +39,121 @@ def _build_controls(
 ) -> html.Div:
     """Build the controls row for a tab."""
     sliders = [
-        html.Div([
-            html.Label("Min articles", style={"fontWeight": "bold", "fontSize": "13px"}),
-            dcc.Slider(
-                id=f"{prefix}-min-articles",
-                min=0,
-                max=max_val,
-                value=min_default,
-                marks={
-                    0: "0",
-                    100: "100",
-                    500: "500",
-                    1000: "1K",
-                    2000: "2K",
-                    5000: "5K",
-                    10000: "10K",
-                    max_val: f"{max_val // 1000}K" if max_val >= 1000 else str(max_val),
-                },
-                step=100,
-                tooltip={"placement": "bottom", "always_visible": False},
-            ),
-        ], style={"minWidth": "280px", "flex": "1"}),
+        html.Div(
+            [
+                html.Label(
+                    "Min articles", style={"fontWeight": "bold", "fontSize": "13px"}
+                ),
+                dcc.Slider(
+                    id=f"{prefix}-min-articles",
+                    min=0,
+                    max=max_val,
+                    value=min_default,
+                    marks={
+                        0: "0",
+                        100: "100",
+                        500: "500",
+                        1000: "1K",
+                        2000: "2K",
+                        5000: "5K",
+                        10000: "10K",
+                        max_val: f"{max_val // 1000}K"
+                        if max_val >= 1000
+                        else str(max_val),
+                    },
+                    step=100,
+                    tooltip={"placement": "bottom", "always_visible": False},
+                ),
+            ],
+            style={"minWidth": "280px", "flex": "1"},
+        ),
     ]
     if works_threshold:
-        sliders.append(html.Div([
-            html.Label("Min OpenAlex works", style={"fontWeight": "bold", "fontSize": "13px"}),
-            dcc.Slider(
-                id=f"{prefix}-min-works",
-                min=0,
-                max=works_max,
-                value=works_default,
-                marks={
-                    0: "0",
-                    10000: "10K",
-                    50000: "50K",
-                    100000: "100K",
-                    500000: "500K",
-                    works_max: f"{works_max // 1000}K" if works_max >= 1000 else str(works_max),
-                },
-                step=10000,
-                tooltip={"placement": "bottom", "always_visible": False},
-            ),
-        ], style={"minWidth": "280px", "flex": "1"}))
+        sliders.append(
+            html.Div(
+                [
+                    html.Label(
+                        "Min OpenAlex works",
+                        style={"fontWeight": "bold", "fontSize": "13px"},
+                    ),
+                    dcc.Slider(
+                        id=f"{prefix}-min-works",
+                        min=0,
+                        max=works_max,
+                        value=works_default,
+                        marks={
+                            0: "0",
+                            10000: "10K",
+                            50000: "50K",
+                            100000: "100K",
+                            500000: "500K",
+                            works_max: f"{works_max // 1000}K"
+                            if works_max >= 1000
+                            else str(works_max),
+                        },
+                        step=10000,
+                        tooltip={"placement": "bottom", "always_visible": False},
+                    ),
+                ],
+                style={"minWidth": "280px", "flex": "1"},
+            )
+        )
 
     return html.Div(
-        style={"display": "flex", "gap": "24px", "alignItems": "flex-end",
-               "flexWrap": "wrap", "marginBottom": "16px"},
+        style={
+            "display": "flex",
+            "gap": "24px",
+            "alignItems": "flex-end",
+            "flexWrap": "wrap",
+            "marginBottom": "16px",
+        },
         children=[
             *sliders,
-            html.Div([
-                html.Label("Search", style={"fontWeight": "bold", "fontSize": "13px"}),
-                dcc.Input(
-                    id=f"{prefix}-search",
-                    type="text",
-                    placeholder="Filter by name...",
-                    debounce=True,
-                    style={"width": "200px", "padding": "6px"},
-                ),
-            ]),
-            html.Div([
-                html.Label("Sort by", style={"fontWeight": "bold", "fontSize": "13px"}),
-                dcc.Dropdown(
-                    id=f"{prefix}-sort",
-                    options=[
-                        {"label": "Observed %", "value": "observed"},
-                        {"label": "Corrected %", "value": "corrected"},
-                        {"label": "Total articles", "value": "total"},
-                        {"label": "Alphabetical", "value": "alphabetical"},
-                    ],
-                    value="observed",
-                    clearable=False,
-                    style={"width": "160px"},
-                ),
-            ]),
-            html.Div([
-                dcc.Checklist(
-                    id=f"{prefix}-show-correction",
-                    options=[{"label": " Show corrected estimates", "value": "show"}],
-                    value=["show"],
-                    style={"fontSize": "13px"},
-                ),
-            ]),
+            html.Div(
+                [
+                    html.Label(
+                        "Search", style={"fontWeight": "bold", "fontSize": "13px"}
+                    ),
+                    dcc.Input(
+                        id=f"{prefix}-search",
+                        type="text",
+                        placeholder="Filter by name...",
+                        debounce=True,
+                        style={"width": "200px", "padding": "6px"},
+                    ),
+                ]
+            ),
+            html.Div(
+                [
+                    html.Label(
+                        "Sort by", style={"fontWeight": "bold", "fontSize": "13px"}
+                    ),
+                    dcc.Dropdown(
+                        id=f"{prefix}-sort",
+                        options=[
+                            {"label": "Observed %", "value": "observed"},
+                            {"label": "Corrected %", "value": "corrected"},
+                            {"label": "Total articles", "value": "total"},
+                            {"label": "Alphabetical", "value": "alphabetical"},
+                        ],
+                        value="observed",
+                        clearable=False,
+                        style={"width": "160px"},
+                    ),
+                ]
+            ),
+            html.Div(
+                [
+                    dcc.Checklist(
+                        id=f"{prefix}-show-correction",
+                        options=[
+                            {"label": " Show corrected estimates", "value": "show"}
+                        ],
+                        value=["show"],
+                        style={"fontSize": "13px"},
+                    ),
+                ]
+            ),
         ],
     )
 
@@ -189,8 +224,12 @@ def _build_footer() -> list:
 
 
 app.layout = html.Div(
-    style={"maxWidth": "1400px", "margin": "0 auto", "padding": "20px",
-           "fontFamily": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"},
+    style={
+        "maxWidth": "1400px",
+        "margin": "0 auto",
+        "padding": "20px",
+        "fontFamily": "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+    },
     children=[
         # Header
         html.H1("OpenSciMetrics", style={"marginBottom": "4px"}),
@@ -198,13 +237,15 @@ app.layout = html.Div(
             [
                 "Open data and code sharing rates across biomedical funders, journals, "
                 "and institutions. Interactive companion to the ",
-                html.A("Open Science Metrics", href="https://github.com/nimh-dsst/open-science-metrics",
-                       target="_blank"),
+                html.A(
+                    "Open Science Metrics",
+                    href="https://github.com/nimh-dsst/open-science-metrics",
+                    target="_blank",
+                ),
                 f". Data: {METADATA['date_range']['from']} to {METADATA['date_range']['to']}.",
             ],
             style={"color": "#666", "marginBottom": "20px"},
         ),
-
         # Tabs
         dcc.Tabs(
             id="main-tabs",
@@ -214,10 +255,8 @@ app.layout = html.Div(
                 dcc.Tab(label="Journals", value="journals"),
             ],
         ),
-
         # Tab content
         html.Div(id="tab-content"),
-
         # Footer
         html.Hr(style={"marginTop": "40px"}),
         html.Div(
@@ -232,45 +271,62 @@ app.layout = html.Div(
 # Callbacks
 # ---------------------------------------------------------------------------
 
+
 @callback(Output("tab-content", "children"), Input("main-tabs", "value"))
 def render_tab(tab: str):
     if tab == "funders":
-        return html.Div([
-            _build_controls(
-                "funder", min_default=2586, max_val=_funder_max,
-                works_threshold=True, works_default=100000, works_max=_funder_works_max,
-            ),
-            dcc.Graph(id="funder-chart"),
-            html.H3("Funder Data", style={"marginTop": "24px"}),
-            dash_table.DataTable(
-                id="funder-table",
-                columns=_build_table_columns(FUNDER_TABLE_COLS),
-                sort_action="native",
-                filter_action="native",
-                export_format="csv",
-                page_size=25,
-                style_table={"overflowX": "auto"},
-                style_cell={"textAlign": "left", "padding": "8px", "fontSize": "13px"},
-                style_header={"fontWeight": "bold", "backgroundColor": "#f8f9fa"},
-            ),
-        ])
+        return html.Div(
+            [
+                _build_controls(
+                    "funder",
+                    min_default=2586,
+                    max_val=_funder_max,
+                    works_threshold=True,
+                    works_default=100000,
+                    works_max=_funder_works_max,
+                ),
+                dcc.Graph(id="funder-chart"),
+                html.H3("Funder Data", style={"marginTop": "24px"}),
+                dash_table.DataTable(
+                    id="funder-table",
+                    columns=_build_table_columns(FUNDER_TABLE_COLS),
+                    sort_action="native",
+                    filter_action="native",
+                    export_format="csv",
+                    page_size=25,
+                    style_table={"overflowX": "auto"},
+                    style_cell={
+                        "textAlign": "left",
+                        "padding": "8px",
+                        "fontSize": "13px",
+                    },
+                    style_header={"fontWeight": "bold", "backgroundColor": "#f8f9fa"},
+                ),
+            ]
+        )
     else:
-        return html.Div([
-            _build_controls("journal", min_default=1800, max_val=_journal_max),
-            dcc.Graph(id="journal-chart"),
-            html.H3("Journal Data", style={"marginTop": "24px"}),
-            dash_table.DataTable(
-                id="journal-table",
-                columns=_build_table_columns(JOURNAL_TABLE_COLS),
-                sort_action="native",
-                filter_action="native",
-                export_format="csv",
-                page_size=25,
-                style_table={"overflowX": "auto"},
-                style_cell={"textAlign": "left", "padding": "8px", "fontSize": "13px"},
-                style_header={"fontWeight": "bold", "backgroundColor": "#f8f9fa"},
-            ),
-        ])
+        return html.Div(
+            [
+                _build_controls("journal", min_default=1800, max_val=_journal_max),
+                dcc.Graph(id="journal-chart"),
+                html.H3("Journal Data", style={"marginTop": "24px"}),
+                dash_table.DataTable(
+                    id="journal-table",
+                    columns=_build_table_columns(JOURNAL_TABLE_COLS),
+                    sort_action="native",
+                    filter_action="native",
+                    export_format="csv",
+                    page_size=25,
+                    style_table={"overflowX": "auto"},
+                    style_cell={
+                        "textAlign": "left",
+                        "padding": "8px",
+                        "fontSize": "13px",
+                    },
+                    style_header={"fontWeight": "bold", "backgroundColor": "#f8f9fa"},
+                ),
+            ]
+        )
 
 
 @callback(
