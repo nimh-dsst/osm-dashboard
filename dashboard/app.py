@@ -279,7 +279,7 @@ def render_tab(tab: str):
             [
                 _build_controls(
                     "funder",
-                    min_default=2586,
+                    min_default=2747,
                     max_val=_funder_max,
                     works_threshold=True,
                     works_default=100000,
@@ -307,7 +307,7 @@ def render_tab(tab: str):
     else:
         return html.Div(
             [
-                _build_controls("journal", min_default=1800, max_val=_journal_max),
+                _build_controls("journal", min_default=4262, max_val=_journal_max),
                 dcc.Graph(id="journal-chart"),
                 html.H3("Journal Data", style={"marginTop": "24px"}),
                 dash_table.DataTable(
@@ -352,11 +352,11 @@ def update_funder(min_articles, min_works, search, sort_by, show_correction):
         df,
         name_col="label",
         url_col="openalex_url",
-        baseline_pct=METADATA["baseline_rates"]["funded"],
-        baseline_label="Funded baseline",
+        baseline_pct=METADATA["baseline_rates"]["funder_linked"],
+        baseline_label="Funder-linked rate",
         show_correction=show_corr,
         title="Open Data Rates Among Major Funders",
-        colorbar_label="Total Funded Articles",
+        colorbar_label="Funder-Linked Articles",
         sort_by=sort_by,
     )
     return fig, df.to_dict("records")

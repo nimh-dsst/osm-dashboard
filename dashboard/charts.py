@@ -108,6 +108,12 @@ def make_bar_chart(
         corrected = df[corrected_col].values
         ci_lo = df[ci_lo_col].values
         ci_hi = df[ci_hi_col].values
+        # Rows without a CI (correction does nothing) get no error bar — NaN in
+        # the error arrays makes Plotly skip them — and a dash in the hover text.
+        ci_text = [
+            f"[{lo:.1f}%, {hi:.1f}%]" if not (np.isnan(lo) or np.isnan(hi)) else "—"
+            for lo, hi in zip(ci_lo, ci_hi)
+        ]
 
         # Background bar: corrected estimate (lighter)
         fig.add_trace(
@@ -130,11 +136,9 @@ def make_bar_chart(
                 hovertemplate=(
                     "<b>%{y}</b><br>"
                     "Corrected: %{x:.1f}%<br>"
-                    "CI: [%{customdata[1]:.1f}%, %{customdata[2]:.1f}%]"
-                    + click_hint
-                    + "<extra></extra>"
+                    "CI: %{customdata[1]}" + click_hint + "<extra></extra>"
                 ),
-                customdata=np.column_stack([url_array, ci_lo, ci_hi]),
+                customdata=np.column_stack([url_array, ci_text]),
             )
         )
 
@@ -165,7 +169,7 @@ def make_bar_chart(
             )
         )
 
-        max_val = max(ci_hi.max(), observed.max())
+        max_val = float(np.nanmax(np.concatenate([ci_hi, corrected, observed])))
     else:
         # Single bar: observed only
         fig.add_trace(
