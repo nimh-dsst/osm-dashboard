@@ -340,12 +340,16 @@ def render_tab(tab: str):
 )
 def update_funder(min_articles, min_works, search, sort_by, show_correction):
     df = FUNDERS
-    if min_articles:
-        df = filter_by_min_articles(df, min_articles)
-    if min_works:
-        df = df[df["aggregated_works_count"] >= min_works]
     if search:
+        # An explicit search bypasses the size thresholds: many funders named in
+        # the paper (e.g. HHMI) fall below them, and silently returning nothing
+        # reads as missing data rather than a filter.
         df = filter_by_search(df, search, "label")
+    else:
+        if min_articles:
+            df = filter_by_min_articles(df, min_articles)
+        if min_works:
+            df = df[df["aggregated_works_count"] >= min_works]
 
     show_corr = "show" in (show_correction or [])
     fig = make_bar_chart(
@@ -372,10 +376,12 @@ def update_funder(min_articles, min_works, search, sort_by, show_correction):
 )
 def update_journal(min_articles, search, sort_by, show_correction):
     df = JOURNALS
-    if min_articles:
-        df = filter_by_min_articles(df, min_articles)
     if search:
+        # See update_funder: search bypasses the threshold so journals named in
+        # the paper (e.g. Nature Genetics, 227 articles) remain findable.
         df = filter_by_search(df, search, "journal")
+    elif min_articles:
+        df = filter_by_min_articles(df, min_articles)
 
     show_corr = "show" in (show_correction or [])
     fig = make_bar_chart(

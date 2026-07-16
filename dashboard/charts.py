@@ -44,6 +44,29 @@ def _log_normalize(values: np.ndarray) -> np.ndarray:
     return (log_vals - log_min) / denom
 
 
+def _empty_figure(title: str) -> go.Figure:
+    """Placeholder shown when no rows match — the colour and axis scaling below
+    both reduce over the rows and raise on an empty frame."""
+    fig = go.Figure()
+    fig.add_annotation(
+        text="No matches — try a different search or lower the minimum.",
+        showarrow=False,
+        font=dict(size=14, color="grey"),
+        xref="paper",
+        yref="paper",
+        x=0.5,
+        y=0.5,
+    )
+    fig.update_layout(
+        title=dict(text=title, font_size=16),
+        xaxis=dict(visible=False),
+        yaxis=dict(visible=False),
+        height=300,
+        template="plotly_white",
+    )
+    return fig
+
+
 def make_bar_chart(
     df,
     name_col: str,
@@ -68,6 +91,9 @@ def make_bar_chart(
         sort_by: One of 'observed', 'corrected', 'total', 'alphabetical'.
     """
     df = df.copy()
+
+    if df.empty:
+        return _empty_figure(title)
 
     # Sort
     if sort_by == "corrected" and corrected_col in df.columns:
