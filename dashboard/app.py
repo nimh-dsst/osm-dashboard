@@ -279,7 +279,7 @@ def render_tab(tab: str):
             [
                 _build_controls(
                     "funder",
-                    min_default=2747,
+                    min_default=2694,
                     max_val=_funder_max,
                     works_threshold=True,
                     works_default=100000,

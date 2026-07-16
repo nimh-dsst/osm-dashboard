@@ -7,7 +7,7 @@
     "from": "2024-01-01",
     "to": "2025-06-25"
   },
-  "data_generated": "2026-07-15",
+  "data_generated": "2026-07-16",
   "source": "osm-preprint-2026",
   "total_articles": 784262,
   "description": "Open data/code rates from oddpub v7.2.3 analysis of PubMed Central open access research articles (dual-source: MinerU PDF extraction where available, PMC XML otherwise); funder attribution from OpenAlex expanded 2026 funding data (retrieved 2026-07-12)"
