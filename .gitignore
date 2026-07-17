@@ -11,7 +11,13 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+# Secrets. `*.env` alone misses editor backups and suffixed variants
+# (.secrets.env~, .env.local, .secrets.env.swp), which is a live risk in a
+# public repo. Keep the tracked template exempt.
 *.env
+*.env~
+*.env.*
+!*.env.template
 *.egg-info/
 *.tfstate
 dist/
