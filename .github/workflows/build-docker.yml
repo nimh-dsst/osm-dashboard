@@ -19,15 +19,10 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5000:5000
     steps:
       - name: Checkout code
         uses: actions/checkout@v4.2.2
-        
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -36,13 +31,11 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-        with:
-          driver-opts: network=host
 
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
-        
+
       - name: Compute image tag
         id: compute-image-tag
         run: |
@@ -56,30 +49,16 @@ jobs:
           found_tag=$(aws ecr list-images --repository-name ${{ inputs.deployment }}-shared --region ${{ inputs.aws_region }} --query 'imageIds[*].imageTag' | grep -q "${{ steps.compute-image-tag.outputs.short_sha }}"; echo $?)
           echo "found_tag=$found_tag" >> $GITHUB_OUTPUT
 
-      - name: Build base Docker image
-        # only build if the image tag doesn't exist
-        if: steps.check-image-tag.outputs.found_tag == 1
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: true
-          file: Dockerfile.base
-          tags: localhost:5000/osm/osm_base
-      - name: Download data from S3
-        # only build if the image tag doesn't exist
-        if: steps.check-image-tag.outputs.found_tag == 1
-        run: |
-          aws s3 cp s3://osm-terraform-storage/dashboard_data/dashboard_20251210-1207.parquet dashboard_data/matches.parquet
-
-
       - name: Build and push Docker image
-        # only build if the image tag doesn't exist
         if: steps.check-image-tag.outputs.found_tag == 1
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
           tags: ${{ steps.compute-image-tag.outputs.tag }}
-          file: web/${{ inputs.deployment }}/Dockerfile
+          file: Dockerfile
           build-args: |
-            BASE_IMAGE=localhost:5000/osm/osm_base
+            BUILD_TIMESTAMP=${{ github.event.head_commit.timestamp || '' }}
+            GIT_COMMIT=${{ steps.compute-image-tag.outputs.short_sha }}
+            GIT_REPO=${{ github.repository }}
+            GIT_BRANCH=${{ github.ref_name }}

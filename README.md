@@ -1,60 +1,24 @@
-# OpenSciMetrics
+# OpenSciMetrics Dashboard
 
-OpenSciMetrics (OSM) applies NLP and LLM-based metrics and indicators related to transparency, data sharing, rigor, and open science on biomedical publications.
+Interactive dashboard for exploring open data and code sharing rates across biomedical funders, journals, and institutions.
 
-# Running the app
+**Live**: [opensciencemetrics.org](https://opensciencemetrics.org)
 
-N.B. pdf parsing does not work on Apple silicon...
+## Quick Start
 
-- With docker-compose and python >=3.11 installed, run the following from the project's root directory:
-
-```
-pip install .
-osm -f path/to/pdf-or-xml -u uuid
-```
-
-If you have many files to upload you may with to start up the docker-compose  dependencies in a separate terminal window:
-
-```
-docker compose up # docker-compose on some systems
-```
-
-And then tell the osm tool that this has been handled:
-
-```
-osm -f path/to/pdf-or-xml -u uuid --user-managed-compose
-osm -f path/to/pdf-or-xml2 -u uuid2 --user-managed-compose
-```
-
-# Contributing
-
-N.B. On Apple silicon you must use emulation and download the mongo container in advance:
-
-```
-export DOCKER_DEFAULT_PLATFORM=linux/amd64
-docker pull mongo:4.4.6
-```
-
-To contribute to the project please run the following commands to set up a development environment:
-
-```
+```bash
 pip install -e .
-docker compose -f compose.yaml -f compose.development.override.yaml up --build
-```
-And in another terminal:
-
-```
-export OSM_API="http://localhost:80"
-osm -f path/to/pdf-or-xml -u uuid --user-managed-compose
+python -m dashboard
 ```
 
+Open http://localhost:8050
 
-## Using pre-commit for commit checks
+## About
 
-Pre-commit will run all of its hooks on every commit you make. To install
-pre-commit and its hooks, run the following commands:
+This dashboard is the interactive companion to the [OSM preprint](https://github.com/nimh-dsst/osm-preprint-2026), which analyzes ~326,000 open access biomedical articles from PubMed Central (2024-2025) using [oddpub](https://github.com/quest-bih/oddpub) to detect data and code sharing statements.
 
-```
-pip install pre-commit
-pre-commit install
-```
+Part of the [Open Science Metrics](https://github.com/nimh-dsst/open-science-metrics) project.
+
+## License
+
+See [LICENSE](LICENSE).
